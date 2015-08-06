@@ -28,8 +28,12 @@ namespace XamarinNativeFacebook.Droid
 			var loginButton = new LoginButton (this.Context);
 				var facebookCallback = new FacebookCallback<LoginResult> {
 				HandleSuccess = shareResult => {
-					Console.WriteLine ("HelloFacebook: Success!");
-				}
+                    Action<string> local = App.PostSuccessFacebookAction;
+                    if (local != null)
+                    {
+                        local(shareResult.AccessToken.Token);
+                    }
+                }
 			,
 			HandleCancel = () => {
 				Console.WriteLine ("HelloFacebook: Canceled");
@@ -39,7 +43,6 @@ namespace XamarinNativeFacebook.Droid
 				}
 			};
 			loginButton.RegisterCallback (MainActivity.CallbackManager, facebookCallback);
-
 			base.SetNativeControl (loginButton);
         }
     }
