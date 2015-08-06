@@ -1,18 +1,22 @@
 using System;
 using Android.App;
 using Android.Content;
+using Xamarin.Facebook;
+using Xamarin.Facebook.Login;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 using XamarinNativeFacebook;
 using XamarinNativeFacebook.Droid;
 using Object = Java.Lang.Object;
 using View = Android.Views.View;
+using Xamarin.Facebook.Login.Widget;
+using Xamarin.Facebook.Share;
 
 [assembly: ExportRenderer(typeof(FacebookLoginButton), typeof(FacebookLoginButtonRendererAndroid))]
 namespace XamarinNativeFacebook.Droid
 {
 
-    public class FacebookLoginButtonRendererAndroid : ButtonRenderer
+	public class FacebookLoginButtonRendererAndroid : ViewRenderer<Button, LoginButton>
     {
         private static Activity _activity;
 
@@ -20,24 +24,23 @@ namespace XamarinNativeFacebook.Droid
         {
             base.OnElementChanged(e);
 
-            _activity = this.Context as Activity;
+            _activity = this.Context as MainActivity;
+			var loginButton = new LoginButton (this.Context);
+				var facebookCallback = new FacebookCallback<LoginResult> {
+				HandleSuccess = shareResult => {
+					Console.WriteLine ("HelloFacebook: Success!");
+				}
+			,
+			HandleCancel = () => {
+				Console.WriteLine ("HelloFacebook: Canceled");
+			},
+			HandleError = shareError => {
+				Console.WriteLine ("HelloFacebook: Error: {0}", shareError);
+				}
+			};
+			loginButton.RegisterCallback (MainActivity.CallbackManager, facebookCallback);
 
-            if (this.Control != null)
-            {
-                Android.Widget.Button button = this.Control;
-                button.SetOnClickListener(ButtonClickListener.Instance.Value);
-            } 
-        }
-
-        private class ButtonClickListener : Object, IOnClickListener
-        {
-            public static readonly Lazy<ButtonClickListener> Instance = new Lazy<ButtonClickListener>(() => new ButtonClickListener());
-
-            public void OnClick(View v)
-            {
-                var myIntent = new Intent(_activity, typeof(FacebookActivity));
-                _activity.StartActivityForResult(myIntent, 0);
-            }
+			base.SetNativeControl (loginButton);
         }
     }
 }
